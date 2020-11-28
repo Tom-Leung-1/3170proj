@@ -279,6 +279,7 @@ public class Main {
             // System.out.println("connected");
         } catch (ClassNotFoundException e) {
             System.out.println("[ERROR]: Java MySQL DB Driver not found!!");
+            System.out.println(e.toString());
             System.exit(0);
         } catch (SQLException e) {
             System.out.println(e);
