@@ -509,7 +509,7 @@ public class Main {
             			}
             			else{
             
-            				System.out.println("Trip_id, Driver Name, Vehicle ID, Vehicle Model, Start,3456 End, Fee, Start Location, Destination");
+            				System.out.println("Trip_id, Driver Name, Vehicle ID, Vehicle Model, Start, End, Fee, Start Location, Destination");
             				while(rs.next()){
             	
             				System.out.printf("%d, %s, %s, %s, %s, %s, %d, %s, %s\n",rs.getInt(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6),rs.getInt(7),rs.getString(8),rs.getString(9));
