@@ -261,262 +261,368 @@ public class Main {
 
 
 
-
-
-
-
-public static class Passenger {
-        public boolean passengerCommand() {
-            System.out.println(
-                    "Passenger, what would you like to do?\n1. Request a ride\n2. Check trip records\n3. Go back");
-            return false;
-        }
-        public int getSqlCount(Statement stmt, String table) throws Exception {
-            String sql = "SELECT Count(*) as Total FROM " + table + ";";
-            ResultSet rs = stmt.executeQuery(sql);
-            rs.next();
-            int count = rs.getInt("Total");
-            return count;
-        }
-        public boolean passenger_login() {
-            boolean askCommand = true;
-            while (true) {
-                if (askCommand) {
-                    askCommand = passengerCommand();
-                }
-                System.out.println("Please enter [1-3]");
-                String command = getInput();
-                switch (command) {
-                    case "1":
-                        askCommand = request_a_ride();
-                        break;
-                    case "2":
-                        askCommand = check_trip_record();
-                        break;
-                    case "3":
-                        return true;
-                    default:
-                        System.out.println("[ERROR] Invalid input.");
-                }
-            }
-        }
+	public static class Passenger {
+        	public boolean passengerCommand() {
+            		System.out.println(
+                    	"Passenger, what would you like to do?\n1. Request a ride\n2. Check trip records\n3. Go back");
+            		return false;
+        	}
+        	public int getSqlCount(Statement stmt, String table) throws Exception {
+            		String sql = "SELECT Count(*) as Total FROM " + table + ";";
+            		ResultSet rs = stmt.executeQuery(sql);
+            		rs.next();
+            		int count = rs.getInt("Total");
+            		return count;
+        	}
+        	public boolean checkexist(String station) {
+            		try{
+                       	String sql = "SELECT Count(*) as Total FROM taxi_stop WHERE name = '"+station +"';";
+            			Connection con = connect();
+            			PreparedStatement stmt = con.prepareStatement(sql);
+          			ResultSet rs = stmt.executeQuery(sql);
+           			rs.next();
+           	 		int count = rs.getInt("Total");
+           	 		con.close();
+            			if (count!=0)
+            			{
+            				return true;
+            			}	
+            			return false;
+                        
+                   	}
+                 	catch(Exception e)
+                   	{  
+                      		System.out.println("Error in connecting to database");
+                   	}
+                   	return false;
+        	}
+        	public boolean passenger_login() {
+            		boolean askCommand = true;
+            		while (true) {
+                		if (askCommand) {
+                    			askCommand = passengerCommand();
+                		}
+                		System.out.println("Please enter [1-3]");
+                		String command = getInput();
+                		switch (command) {
+                    			case "1":
+                       	 		askCommand = request_a_ride();
+                       	 		break;
+                    			case "2":
+                       	 		askCommand = check_trip_record();
+                       		 	break;
+                    			case "3":
+                       	 		return true;
+                    			default:
+                       	 		System.out.println("[ERROR] Invalid input.");
+                		}
+            		}
+        	}
         
         
                 public boolean request_a_ride() {
             
-                int passenger_id=-1;
-                int passenger_no=-1;
-                int error=0;
-                do{
-                System.out.println("Please enter your ID.");
-                String str = getInput();
-                try{
-                        passenger_id=Integer.parseInt(str);
-                        error =-1;
-                   }
-                catch(Exception e)
-                   {  
-                     System.out.println("Not an integer");
-                   }
-                   error++;
-                }while((passenger_id<-1)&&(error<3));
+                	int passenger_id=-1;
+                	int passenger_no=-1;
                 
-                do{
-                System.out.println("Please enter the number of passengers.");
-                String str = getInput();
-                try{
-                        passenger_no=Integer.parseInt(str);
-                        error=0;
-                   }
-                catch(Exception e)
-                   {  
-                     System.out.println("Not an integer with range 1-8");
-                   }
-                   error++;
-                }while(((passenger_no>8)||(passenger_no<1))&&(error<3));
+                	do{
+                		System.out.println("Please enter your ID.");
+                		String str = getInput();
+                		try{
+                        		passenger_id=Integer.parseInt(str);
+                        
+                   		}
+                		catch(Exception e)
+                   		{  
+                     			System.out.println("[ERROR] Not vaild input.");
+                   		}
+                   		if(passenger_id<0)
+                   		{
+                   			System.out.println("[ERROR] Not vaild input.");
+                   		}
+                   		
+                  
+                	}while(passenger_id<0);
                 
-                System.out.println("Please enter the start location.");
-                String start = getInput();
+                	do{
+                		System.out.println("Please enter the number of passengers.");
+                		String str = getInput();
+                		try{
+                       	 	passenger_no=Integer.parseInt(str);
+                        
+                   		}
+                		catch(Exception e)
+                   		{  
+                     			System.out.println("[ERROR] Not vaild input.");
+                   		}
+                   		if((passenger_no>8)||(passenger_no<1))
+                   		{
+                   			System.out.println("[ERROR] Not vaild input.");
+                   		}
+                   
+                	}while((passenger_no>8)||(passenger_no<1));
+                	String end;
+                	String start;
+                	do{
+                		System.out.println("Please enter the start location.");
+                 		start = getInput();
+                 	
+                 	
+                		while(checkexist(start)==false)
+                		{
+                			System.out.println("[ERROR] Station not exist.");
+                 			start = getInput();
+                 		
+                		}
+                		System.out.println("Please enter the destination.");
+                		end = getInput();
+                		while(checkexist(end)==false)
+                		{
+                			System.out.println("[ERROR] Station not exist.");
+                 			end = getInput();
+                		}
+               	 	if(start.equalsIgnoreCase(end)==true)
+                		{
+               		 	System.out.println("[ERROR] Start location and destination should not be the same.");
                 
-                System.out.println("Please enter the destination.");
-                String end = getInput();
+               		}
+               	 }while(start.equalsIgnoreCase(end)==true);
+                	System.out.println("Please enter the model. (Press enter to skip)");
+                	String model = getInput();
+                	if (model=="")
+                	{
+                		model= "NULL";
+                	}
+                	
+                	int min_years = -1;
+                	do{
+                		System.out.println("Please enter the minimum driving years of driver.  (Press enter to skip)");
+                		String min_years_str = getInput();
+                		if(min_years_str=="")
+                		{
+                			min_years =0;
+                			break;
+                		}
+                		try{
+                        		min_years=Integer.parseInt(min_years_str);
+                   		}
+                		catch(Exception e)
+                   		{  
+                        		System.out.println("[ERROR] Not vaild input.");
+                   		}
+                   		if(min_years<0)
+                   		{
+                   			System.out.println("[ERROR] Not vaild input.");
+                   		}
+            		}while(min_years<0);
+                	int id =getid();
+                	int no_drivers=check_driver_condition(model,passenger_no,min_years);   //check how many drivers can take the request
+                	if(no_drivers==0)
+                	{
+                		System.out.println("[ERROR] No drivers are able to take the request.");
+                	}
+                	else
+                	{
+                		if(send_request(id,passenger_id,start,end,model,passenger_no,min_years)==true)
+                		{
+		        		System.out.printf("Your request is placed. %d drivers are able to take the request.\n",no_drivers);
+                		}
+                	}
                 
-                System.out.println("Please enter the model. (Press enter to skip)");
-                String model = getInput();
-                if (model=="")
-                {
-                model= "NULL";
-                }
-                System.out.println("Please enter the minimum driving years of driver.  (Press enter to skip)");
-                String min_years_str = getInput();
-                int min_years = -1;
-                try{
-                        min_years=Integer.parseInt(min_years_str);
-                   }
-                catch(Exception e)
-                   {  
-                        min_years = 0;
-                   }
-            
-                
-                
-                int id =getid();
-                if(send_request(id,passenger_id,start,end,model,passenger_no,min_years)==true)
-                {
-                int no_drivers=check_driver_condition(model,passenger_no,min_years);   //check how many drivers can take the request
-                System.out.printf("Your request is placed. %d drivers are able to take the request.\n",no_drivers);
-                }
-                
-                
-                return true;
+                	return true;
            
-        }
-        public int check_driver_condition(String model,int passengers,int driving_years){  //check how many drivers can take the request
+        	}
+        	public int check_driver_condition(String model,int passengers,int driving_years){  //check how many drivers can take the request
         
-            try {
-            PreparedStatement ps ;
-            Connection con = connect();
-            String sql;
-            if(model == "NULL")
-            		{
-            		sql = "SELECT COUNT(*) AS Total FROM driver INNER JOIN vehicle ON driver.vehicle_id = vehicle.id WHERE driver.driving_years >= "+Integer.toString(driving_years) +" AND vehicle.seats >= "+Integer.toString(passengers) +";";
-            		ps = con.prepareStatement(sql);
-            		
-            		
+            		try {
+            			PreparedStatement ps ;
+            			Connection con = connect();
+            			String sql;
+            			if(model == "NULL")
+            			{
+            				sql = "SELECT COUNT(*) AS Total FROM driver INNER JOIN vehicle ON driver.vehicle_id = vehicle.id WHERE driver.driving_years >= "+Integer.toString(driving_years) +" AND vehicle.seats >= "+Integer.toString(passengers) +";";
+            				ps = con.prepareStatement(sql);
+		    		}
+            			else{
+            				sql = "SELECT COUNT(*) AS Total FROM driver INNER JOIN vehicle ON driver.vehicle_id = vehicle.id WHERE driver.driving_years >= "+Integer.toString(driving_years) +" AND vehicle.seats >= "+Integer.toString(passengers) +" AND vehicle.model LIKE '%"+ model +"%';";
+            				ps = con.prepareStatement(sql);
+            			}
+            			ResultSet rs = ps.executeQuery(sql);
+                		rs.next();
+                		int count = rs.getInt("Total");
+                		con.close();
+                		return count;
+            		} catch (Exception e) {
+                		System.out.println("[ERROR] SQL Error in send request.");
+                		System.out.println(e.toString()); // need to comment
             		}
-            	else{
-            		sql = "SELECT COUNT(*) AS Total FROM driver INNER JOIN vehicle ON driver.vehicle_id = vehicle.id WHERE driver.driving_years >= "+Integer.toString(driving_years) +" AND vehicle.seats >= "+Integer.toString(passengers) +" AND vehicle.model LIKE '%"+ model +"%';";
-            		ps = con.prepareStatement(sql);
+            		return -1;
+        	}
+        	public boolean send_request(int id,int passenger_id,String start_location,String destination,String model,int passengers,int driving_years){  //send request to server
+            		try {
+            			Connection con = connect();
+            			String sql = "insert into request values(?,?,?,?,?,?,?,?);";
+                		PreparedStatement ps = con.prepareStatement(sql);
+                		ps.setInt(1, id);
+                		ps.setInt(2, passenger_id);
+                		ps.setString(3, start_location);
+                		ps.setString(4, destination);
+                		ps.setString(5, model);
+                		ps.setInt(6, passengers);
+                		ps.setInt(7, 0);
+                		ps.setInt(8, driving_years);
+                		ps.executeUpdate();
+                		con.close();
+                		return true;
+            		} catch (Exception e) {
+                		System.out.println("[ERROR] SQL Error in send request.");
+                		System.out.println(e.toString()); // need to comment
+            		}
+            		return false;
+        	}
+        	public int getid() {   //get the request id
+            		try {
+                		Connection con = connect();
+                		Statement stmt = con.createStatement();
+                		int count =getSqlCount(stmt, "request")+1;
+                		con.close();
+                		return count;
+            		} catch (Exception e) {
+                		System.out.println("[ERROR] SQL Error in Check data.");
+                		System.out.println(e.toString()); // need to comment
+            		}
+            		return -1;
+        	}
+        
+        	public boolean checking_trip_record(int passenger_id,String start,String end,String destination){
+            		try {
+            			PreparedStatement ps ;
+            			Connection con = connect();
+            			String sql;
+            			sql = "SELECT trip.id, driver.name, vehicle.id, vehicle.model, trip.start_time, trip.end_time, trip.fee, trip.start_location, trip.destination FROM trip INNER JOIN driver ON trip.driver_id = driver.id INNER JOIN vehicle ON driver.vehicle_id = vehicle.id WHERE trip.destination= '"+destination+"' AND trip.passenger_id= " +Integer.toString(passenger_id) +" AND trip.start_time >= '"+start+" 00:00:00' AND trip.end_time <= '"+end+" 23:59:59' ORDER BY trip.start_time DESC;";
+            			ps = con.prepareStatement(sql);
+            
+            			ResultSet rs = ps.executeQuery(sql);
+            			if(!rs.isBeforeFirst())
+            			{
+            				System.out.println("No record founds.");
+            			}
+            			else{
+            
+            				System.out.println("Trip_id, Driver Name, Vehicle ID, Vehicle Model, Start,3456 End, Fee, Start Location, Destination");
+            				while(rs.next()){
+            	
+            				System.out.printf("%d, %s, %s, %s, %s, %s, %d, %s, %s\n",rs.getInt(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6),rs.getInt(7),rs.getString(8),rs.getString(9));
+            				}
+            				con.close();
+            			}
+            		return true;
+            		} catch (Exception e) {
+                			System.out.println("[ERROR] SQL Error in send request.");
+                			System.out.println(e.toString()); // need to comment
+            		}
+            		return false;
+        	}
+        	public int checkdatevalid(String start, String end) {   //get the request id
+            		try{
+            			SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd");
+      				java.util.Date d1 = sdformat.parse(start);
+      				java.util.Date d2 = sdformat.parse(end);
+      				if(d1.compareTo(d2) > 0) {
+      					System.out.println("[Error} start date occurs after end date.");
+         				return -1;
+         				
+      				}
+      				return 1;
             		
-            		
-            	
-            	}
-            	ResultSet rs = ps.executeQuery(sql);
-                rs.next();
-                int count = rs.getInt("Total");
-                return count;
-            } catch (Exception e) {
-                System.out.println("[ERROR] SQL Error in send request.");
-                System.out.println(e.toString()); // need to comment
-            }
-            return -1;
-        }
-        public boolean send_request(int id,int passenger_id,String start_location,String destination,String model,int passengers,int driving_years){  //send request to server
-            try {
-            	Connection con = connect();
-            	String sql = "insert into request values(?,?,?,?,?,?,?,?);";
-                PreparedStatement ps = con.prepareStatement(sql);
-                ps.setInt(1, id);
-                ps.setInt(2, passenger_id);
-                ps.setString(3, start_location);
-                ps.setString(4, destination);
-                ps.setString(5, model);
-                ps.setInt(6, passengers);
-                ps.setInt(7, 0);
-                ps.setInt(8, driving_years);
-                ps.executeUpdate();
+            		} catch (Exception e) {
+            				System.out.println("[Error} Invalid date");
+                			return -1;
+            		}
+        	}
+        	
+		public boolean check_trip_record() {
+                	int passenger_id=-1;
+                	do{
+                		System.out.println("Please enter your ID.");
+                		String str = getInput();
+                		try{
+                        		passenger_id=Integer.parseInt(str);
+                        
+                   		}
+                		catch(Exception e)
+                   		{  
+                     			System.out.println("[ERROR] Not vaild input.");
+                   		}
+                   		if(passenger_id<0)
+                   		{
+                   			System.out.println("[ERROR] Not vaild input.");
+                   		}
+                   
+                	}while(passenger_id<0);
+                	 
+                	String pattern = "([0-9]{4})-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01])";
+                	String start;
+                	String end;
+                	int datevalid=1;
+                	do{
+                		do{
+                			System.out.println("Please enter the start date.");
+                			start = getInput();
+                			if(start.matches(pattern))
+                			{
+                				datevalid =1;
+                			}
+                			else
+                			{
+                				datevalid =0;
+                				System.out.println("[ERROR] Not vaild input.");
+                			}
+                		}while(datevalid== 0);
+                	
+                	
+                		do{
+                			System.out.println("Please enter the end date.");
+                			end = getInput();
+                			if(end.matches(pattern))
+                			{
+                				datevalid =1;
+                			}
+                			else
+                			{
+                				datevalid =0;
+                				System.out.println("[ERROR] Not vaild input.");
+                			}
+                		}while(datevalid== 0);
+                		if(checkdatevalid(start,end)==1)
+                		{
+                			datevalid =1;
+                		
+                		}
+                		else
+                		{
+                			datevalid =0;
+                		}
+                		
+                	}while(datevalid==0);
+                	System.out.println("Please enter the destination.");
+                	String destination = getInput();
+                	while(checkexist(destination)==false)
+                	{
+                		System.out.println("[ERROR] Station not exist.");
+                		destination = getInput();
+                	}	
                 
-                return true;
-            } catch (Exception e) {
-                System.out.println("[ERROR] SQL Error in send request.");
-                System.out.println(e.toString()); // need to comment
-            }
-            return false;
-        }
-        public int getid() {   //get the request id
-            try {
-                Connection con = connect();
-                Statement stmt = con.createStatement();
-                return getSqlCount(stmt, "request")+1;
-            } catch (Exception e) {
-                System.out.println("[ERROR] SQL Error in Check data.");
-                System.out.println(e.toString()); // need to comment
-            }
-            return -1;
-        }
-        
-        public boolean checking_trip_record(int passenger_id,String start,String end,String destination){
-            try {
-            PreparedStatement ps ;
-            Connection con = connect();
-            String sql;
-            sql = "SELECT trip.id, driver.name, vehicle.id, vehicle.model, trip.start_time, trip.end_time, trip.fee, trip.start_location, trip.destination FROM trip INNER JOIN driver ON trip.driver_id = driver.id INNER JOIN vehicle ON driver.vehicle_id = vehicle.id WHERE trip.destination= '"+destination+"' AND trip.passenger_id= " +Integer.toString(passenger_id) +" AND trip.start_time >= '"+start+" 00:00:00' AND trip.end_time <= '"+end+" 23:59:59' ORDER BY trip.start_time DESC;";
-            ps = con.prepareStatement(sql);
-            
-            ResultSet rs = ps.executeQuery(sql);
-            if(!rs.isBeforeFirst())
-            {
-            	System.out.println("No record founds.");
-            }
-            else{
-            
-            	System.out.println("Trip_id, Driver Name, Vehicle ID, Vehicle Model, Start,3456 End, Fee, Start Location, Destination");
-            	while(rs.next()){
-            	
-            	System.out.printf("%d, %s, %s, %s, %s, %s, %d, %s, %s\n",rs.getInt(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getString(5),rs.getString(6),rs.getInt(7),rs.getString(8),rs.getString(9));
-            	
-            	
-            	}
-            
-            }
-            return true;
-            } catch (Exception e) {
-                System.out.println("[ERROR] SQL Error in send request.");
-                System.out.println(e.toString()); // need to comment
-            }
-            return false;
-        }
-        public boolean check_trip_record() {
-                int passenger_id=-1;
-                
-                int error=0;
-                do{
-                System.out.println("Please enter your ID.");
-                String str = getInput();
-                try{
-                        passenger_id=Integer.parseInt(str);
-                        error =-1;
-                   }
-                catch(Exception e)
-                   {  
-                     System.out.println("Not an integer");
-                   }
-                   error++;
-                }while((passenger_id<-1)&&(error<3));
-                String start;
-                do{
-                System.out.println("Please enter the start date.");
-                start = getInput();
-                }while(start.matches("^\\d{4}-\\d{2}-\\d{2}$")== false);
-                String end;
-                do{
-                System.out.println("Please enter the end date.");
-                end = getInput();
-                }while(end.matches("^\\d{4}-\\d{2}-\\d{2}$")== false);
-                
-                System.out.println("Please enter the destination.");
-                String destination = getInput();
-                
-                
-                if(checking_trip_record(passenger_id,start,end,destination)==false)
-                {
-                	System.out.println("Error in check a trip");
-                }
-               
-                
-                
-                return true;
-        }
-        
-        
-        
-        
+                	if(checking_trip_record(passenger_id,start,end,destination)==false)
+                	{
+                		System.out.println("Error in check a trip");
+                	}
+		       return true;
+        	}
         
         }
 
-
-
-
+//passenger class end
 
 
 
